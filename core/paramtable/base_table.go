@@ -52,6 +52,7 @@ const (
 
 	DefaultMinioBackupBucketName = "a-bucket"
 	DefaultMinioBackupRootPath   = "backup"
+	DefaultMinioUseOriginFiles   = "false"
 )
 
 var defaultYaml = DefaultBackupYaml

@@ -117,6 +117,7 @@ type MinioConfig struct {
 
 	BackupBucketName string
 	BackupRootPath   string
+	UseOriginFiles   bool
 }
 
 func (p *MinioConfig) init(base *BaseTable) {
@@ -135,6 +136,7 @@ func (p *MinioConfig) init(base *BaseTable) {
 
 	p.initBackupBucketName()
 	p.initBackupRootPath()
+	p.initUseOriginFiles()
 }
 
 func (p *MinioConfig) initAddress() {
@@ -173,6 +175,11 @@ func (p *MinioConfig) initBucketName() {
 func (p *MinioConfig) initRootPath() {
 	rootPath := p.Base.LoadWithDefault("minio.rootPath", DefaultMinioRootPath)
 	p.RootPath = rootPath
+}
+
+func (p *MinioConfig) initUseOriginFiles() {
+	useOriginFiles := p.Base.LoadWithDefault("minio.useOriginFiles", DefaultMinioUseOriginFiles)
+	p.UseOriginFiles, _ = strconv.ParseBool(useOriginFiles)
 }
 
 func (p *MinioConfig) initUseIAM() {

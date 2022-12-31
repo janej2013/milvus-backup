@@ -16,6 +16,7 @@ var (
 	restoreCollectionNames string
 	renameSuffix           string
 	renameCollectionNames  string
+	//useOriginFiles         int
 )
 
 var restoreBackupCmd = &cobra.Command{
@@ -64,6 +65,7 @@ func init() {
 	restoreBackupCmd.Flags().StringVarP(&restoreCollectionNames, "collections", "c", "", "collectionNames to restore")
 	restoreBackupCmd.Flags().StringVarP(&renameSuffix, "suffix", "s", "", "add a suffix to collection name to restore")
 	restoreBackupCmd.Flags().StringVarP(&renameCollectionNames, "rename", "r", "", "rename collections to new names")
+	//restoreBackupCmd.Flags().IntVarP(&useOriginFiles, "rename", "r", 0, "rename collections to new names")
 
 	rootCmd.AddCommand(restoreBackupCmd)
 }

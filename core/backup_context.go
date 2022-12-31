@@ -54,6 +54,8 @@ type BackupContext struct {
 	backupTasks      sync.Map //map[string]*backuppb.BackupInfo
 
 	restoreTasks map[string]*backuppb.RestoreBackupTask
+
+	useOriginFiles bool
 }
 
 func CreateMilvusClient(ctx context.Context, params paramtable.BackupParams) (gomilvus.Client, error) {
@@ -141,6 +143,7 @@ func CreateBackupContext(ctx context.Context, params paramtable.BackupParams) *B
 		backupBucketName: params.MinioCfg.BackupBucketName,
 		milvusRootPath:   params.MinioCfg.RootPath,
 		backupRootPath:   params.MinioCfg.BackupRootPath,
+		useOriginFiles:   params.MinioCfg.UseOriginFiles,
 	}
 }
 
@@ -1116,6 +1119,40 @@ func (b BackupContext) executeBulkInsert(ctx context.Context, coll string, parti
 	return nil
 }
 
+func (b BackupContext) ExecuteBulkInsert(ctx context.Context, coll string, partition string, files []string, endTime int64) error {
+	log.Debug("execute bulk insert",
+		zap.String("collection", coll),
+		zap.String("partition", partition),
+		zap.Strings("files", files),
+		zap.Int64("endTime", endTime),
+	)
+	if !b.started {
+		err := b.Start()
+		if err != nil {
+			return err
+		}
+	}
+	taskId, err := b.milvusClient.BulkInsert(ctx, coll, partition, files, gomilvus.IsBackup(), gomilvus.WithEndTs(endTime))
+	if err != nil {
+		log.Error("fail to bulk insert",
+			zap.Error(err),
+			zap.String("collectionName", coll),
+			zap.String("partitionName", partition),
+			zap.Strings("files", files))
+		return err
+	}
+	err = b.watchBulkInsertState(ctx, taskId, BULKINSERT_TIMEOUT, BULKINSERT_SLEEP_INTERVAL)
+	if err != nil {
+		log.Error("fail or timeout to bulk insert",
+			zap.Error(err),
+			zap.Int64("taskId", taskId),
+			zap.String("targetCollectionName", coll),
+			zap.String("partitionName", partition))
+		return err
+	}
+	return nil
+}
+
 func (b BackupContext) watchBulkInsertState(ctx context.Context, taskId int64, timeout int64, sleepSeconds int) error {
 	start := time.Now().Unix()
 	for time.Now().Unix()-start < timeout {
@@ -1139,8 +1176,10 @@ func (b BackupContext) getBackupPartitionPaths(ctx context.Context, bucketName s
 		zap.String("bucketName", bucketName),
 		zap.String("backupPath", backupPath),
 		zap.Int64("partitionID", partition.PartitionId))
-
 	insertPath := fmt.Sprintf("%s/%s/%s/%v/%v/", backupPath, BINGLOG_DIR, INSERT_LOG_DIR, partition.GetCollectionId(), partition.GetPartitionId())
+	if b.useOriginFiles {
+		insertPath = fmt.Sprintf("%s/%s/%v/%v/", b.milvusRootPath, INSERT_LOG_DIR, partition.GetCollectionId(), partition.GetPartitionId())
+	}
 	deltaPath := fmt.Sprintf("%s/%s/%s/%v/%v/", backupPath, BINGLOG_DIR, DELTA_LOG_DIR, partition.GetCollectionId(), partition.GetPartitionId())
 
 	exist, err := b.storageClient.Exist(ctx, bucketName, deltaPath)

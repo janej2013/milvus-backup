@@ -1,6 +1,6 @@
 # Configures the system log output.
 log:
-  level: info # Only supports debug, info, warn, error, panic, or fatal. Default 'info'.
+  level: debug # Only supports debug, info, warn, error, panic, or fatal. Default 'info'.
   console: true
   file:
     rootPath: "logs/backup.log"
@@ -10,7 +10,7 @@ http:
 
 # milvus proxy address, compatible to milvus.yaml
 milvus:
-  address: localhost
+  address: 10.255.245.18
   port: 19530
   authorizationEnabled: false
   # tls mode values [0, 1, 2]
@@ -21,7 +21,7 @@ milvus:
 
 # Related configuration of minio, which is responsible for data persistence for Milvus.
 minio:
-  address: localhost # Address of MinIO/S3
+  address: 10.255.245.18 # Address of MinIO/S3
   port: 9000   # Port of MinIO/S3
   accessKeyID: minioadmin # accessKeyID of MinIO/S3
   secretAccessKey: minioadmin # MinIO/S3 encryption string
@@ -34,4 +34,6 @@ minio:
 
   backupBucketName: "a-bucket"
   backupRootPath: "backup"
+  useOriginFiles: true
+
 
