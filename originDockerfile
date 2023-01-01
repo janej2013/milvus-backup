@@ -10,7 +10,5 @@ From alpine:3.17
 WORKDIR /app
 COPY --from=builder /app/milvus-backup .
 COPY --from=builder /app/configs ./configs
-ENV TZ=Asia/Shanghai
-RUN apk add --no-cache bash curl tzdata vim
-ENTRYPOINT ["sleep"]
-CMD ["infinity"]
+EXPOSE 8080
+ENTRYPOINT ["milvus-backup", "server"]
