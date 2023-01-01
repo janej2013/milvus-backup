@@ -357,11 +357,19 @@ func (b BackupContext) executeCreateBackup(ctx context.Context, request *backupp
 		}
 
 		// Flush
-		newSealedSegmentIDs, flushedSegmentIDs, timeOfSeal, err := b.milvusClient.Flush(ctx, collection.GetCollectionName(), false)
-		if err != nil {
-			log.Error(fmt.Sprintf("fail to flush the collection: %s", collection.GetCollectionName()))
-			return backupInfo, err
-		}
+		//newSealedSegmentIDs, flushedSegmentIDs, timeOfSeal, err := b.milvusClient.Flush(ctx, collection.GetCollectionName(), false)
+		//if err != nil {
+		//	log.Error(fmt.Sprintf("fail to flush the collection: %s", collection.GetCollectionName()))
+		//	return backupInfo, err
+		//}
+		var (
+			newSealedSegmentIDs []int64
+			flushedSegmentIDs   []int64
+			timeOfSeal          int64
+		)
+		newSealedSegmentIDs = []int64{}
+		flushedSegmentIDs = []int64{}
+		timeOfSeal = time.Now().Unix()
 		log.Info("flush segments",
 			zap.Int64s("newSealedSegmentIDs", newSealedSegmentIDs),
 			zap.Int64s("flushedSegmentIDs", flushedSegmentIDs),
@@ -378,13 +386,14 @@ func (b BackupContext) executeCreateBackup(ctx context.Context, request *backupp
 			segmentDict := utils.ArrayToMap(flushSegmentIds)
 			checkedSegments := make([]*entity.Segment, 0)
 			for _, seg := range segmentEntities {
-				sid := seg.ID
-				if _, ok := segmentDict[sid]; ok {
-					delete(segmentDict, sid)
-					checkedSegments = append(checkedSegments, seg)
-				} else {
-					log.Warn("this may be new segments after flush, skip it", zap.Int64("id", sid))
-				}
+				checkedSegments = append(checkedSegments, seg)
+				//sid := seg.ID
+				//if _, ok := segmentDict[sid]; ok {
+				//	delete(segmentDict, sid)
+				//	checkedSegments = append(checkedSegments, seg)
+				//} else {
+				//	log.Warn("this may be new segments after flush, skip it", zap.Int64("id", sid))
+				//}
 			}
 			if len(segmentDict) > 0 {
 				errorMsg := "Segment return in Flush not exist in GetPersistentSegmentInfo. segment ids: " + fmt.Sprint(utils.MapKeyArray(segmentDict))
@@ -1044,6 +1053,11 @@ func (b BackupContext) executeRestoreCollectionTask(ctx context.Context, backupB
 	log.Info("create collection", zap.String("collectionName", targetCollectionName))
 
 	for _, partitionBackup := range task.GetCollBackup().GetPartitionBackups() {
+		if partitionBackup.GetSize() == 0 {
+			continue
+		}
+		infoMsg := fmt.Sprintf("partitionBackup.GetSize() %d, GetPartitionName() %s", partitionBackup.GetSize(), partitionBackup.GetPartitionName())
+		log.Info(infoMsg)
 		exist, err := b.milvusClient.HasPartition(ctx, targetCollectionName, partitionBackup.GetPartitionName())
 		if err != nil {
 			log.Error("fail to check has partition", zap.Error(err))
