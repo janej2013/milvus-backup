@@ -482,18 +482,18 @@ func (b BackupContext) executeCreateBackup(ctx context.Context, request *backupp
 						return backupInfo, err
 					}
 
-					err = b.storageClient.Copy(ctx, b.milvusBucketName, b.backupBucketName, binlog.GetLogPath(), targetPath)
-					if err != nil {
-						log.Info("Fail to copy file",
-							zap.Error(err),
-							zap.String("from", binlog.GetLogPath()),
-							zap.String("to", targetPath))
-						return backupInfo, err
-					} else {
-						log.Debug("Successfully copy file",
-							zap.String("from", binlog.GetLogPath()),
-							zap.String("to", targetPath))
-					}
+					//err = b.storageClient.Copy(ctx, b.milvusBucketName, b.backupBucketName, binlog.GetLogPath(), targetPath)
+					//if err != nil {
+					//	log.Info("Fail to copy file",
+					//		zap.Error(err),
+					//		zap.String("from", binlog.GetLogPath()),
+					//		zap.String("to", targetPath))
+					//	return backupInfo, err
+					//} else {
+					//	log.Debug("Successfully copy file",
+					//		zap.String("from", binlog.GetLogPath()),
+					//		zap.String("to", targetPath))
+					//}
 				}
 			}
 			// delta log
@@ -520,18 +520,18 @@ func (b BackupContext) executeCreateBackup(ctx context.Context, request *backupp
 							zap.String("file", binlog.GetLogPath()))
 						return backupInfo, err
 					}
-					err = b.storageClient.Copy(ctx, b.milvusBucketName, b.backupBucketName, binlog.GetLogPath(), targetPath)
-					if err != nil {
-						log.Info("Fail to copy file",
-							zap.Error(err),
-							zap.String("from", binlog.GetLogPath()),
-							zap.String("to", targetPath))
-						return backupInfo, err
-					} else {
-						log.Info("Successfully copy file",
-							zap.String("from", binlog.GetLogPath()),
-							zap.String("to", targetPath))
-					}
+					//err = b.storageClient.Copy(ctx, b.milvusBucketName, b.backupBucketName, binlog.GetLogPath(), targetPath)
+					//if err != nil {
+					//	log.Info("Fail to copy file",
+					//		zap.Error(err),
+					//		zap.String("from", binlog.GetLogPath()),
+					//		zap.String("to", targetPath))
+					//	return backupInfo, err
+					//} else {
+					//	log.Info("Successfully copy file",
+					//		zap.String("from", binlog.GetLogPath()),
+					//		zap.String("to", targetPath))
+					//}
 				}
 			}
 		}
